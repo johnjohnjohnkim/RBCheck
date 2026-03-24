@@ -1,12 +1,11 @@
 import sqlite3
 import os
-import pprint as p
-import datetime as d
 import re
 
 def parseTransaction(text):
     '''
     Cheeky function finding where the embedded message within attributedBody starts and ends.
+    Much easier to do this than parse through NSString (yuck)
 
     @returns string text of the transaction
     '''
@@ -38,6 +37,8 @@ def transactionAnalysis(text):
         transactionType = "CC Purchase"
     elif "PAYMENT OF" in text:
         transactionType = "Credit Card Payment"
+    elif "CREDITED FOR" in text:
+        transactionType = "Credit Refund"
     return amount, place, transactionType
 
 
@@ -58,11 +59,11 @@ cursor.execute(query)
 result = cursor.fetchall()
 
 
-for query in result:
+for trans in result:
     transaction = {}
     
-    transaction["Time"] = query[0]
-    analysis = transactionAnalysis(parseTransaction(str(query[1]).upper()))
+    transaction["Time"] = trans[0]
+    analysis = transactionAnalysis(parseTransaction(str(trans[1]).upper()))
 
     transaction["Amount"] = analysis[0]
     transaction["Place"] = analysis[1] 
